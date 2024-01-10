@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "813818539053",
+    "project_id": "stokvelgo",
+    "storage_bucket": "stokvelgo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813818539053:android:26b2d817799910f63b1ca4",
+        "android_client_info": {
+          "package_name": "com.example.stokvel_go"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHcOty-mUZLnPgQTZJIpU_eRublg9-Ir8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

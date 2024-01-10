@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyDk4yOHpyl6pm8qcT4lPbK-H3TBTI5SJiQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>813818539053</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.stokvelGo</string>
+	<key>PROJECT_ID</key>
+	<string>stokvelgo</string>
+	<key>STORAGE_BUCKET</key>
+	<string>stokvelgo.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:813818539053:ios:72e48c9302f0ad0f3b1ca4</string>
+</dict>
+</plist>
