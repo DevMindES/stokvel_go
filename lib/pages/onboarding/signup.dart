@@ -1,9 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:provider/provider.dart';
-import 'package:stokvel_go/providers/app_data.dart';
-import 'package:stokvel_go/providers/auth_provider.dart';
+import 'package:stokvel_go/controllers/app_controller.dart';
+import 'package:stokvel_go/controllers/auth_controller.dart';
 import 'package:stokvel_go/utils/error_handling.dart';
 import 'package:stokvel_go/utils/neubox.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
@@ -18,6 +15,9 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp>
 {
+  final _authController = AuthController.instance;
+  final _appController = AppController.instance;
+
   final _nameController = TextEditingController();
   final _surnameController = TextEditingController();
   final _idController = TextEditingController();
@@ -49,23 +49,18 @@ class _SignUpState extends State<SignUp>
   Future<void> _signUpButtonOnPressed() async
   {
     if (!_allFieldsFilled()) {
-      await showMyDialog(
-        context,
+      await showGetMessageDialog(
         'Info',
         'Please fill out all text fields.'
       );
       return;
     }
 
-    final isEmailORphone = isEmailOrPhone(
-      context: context,
-      emailOrPhone: _emailOrPhoneController.text.trim()
-    );
+    final isEmailORphone = isEmailOrPhone(emailOrPhone: _emailOrPhoneController.text.trim());
 
     if (isEmailORphone == -1) {
       // If it's not a valid email or phone, show the dialog
-      await showMyDialog(
-        context,
+      await showGetMessageDialog(
         'Info',
         'Please ensure you have entered a valid email address or phone number'
       );
@@ -88,22 +83,18 @@ class _SignUpState extends State<SignUp>
       phoneNumber = '+268${_emailOrPhoneController.text.trim()}';
     }
 
-    context.read<AuthProvider>().signup(
-      context: context,
+    _authController.signUp(
       name: _nameController.text.trim(),
       surname: _surnameController.text.trim(),
       idNumber: _idController.text.trim(),
       email: isEmailORphone == 1 ? _emailOrPhoneController.text.trim() : null,
       phoneNumber: isEmailORphone == 0 ? phoneNumber : null,
-      password: _passwordController.text.trim()
     );
   }
 
   @override
   Widget build(BuildContext context)
   {
-    final _appData = Provider.of<AppData>(context, listen: false);
-
     return Scaffold(
       appBar: appBar(),
       body: Container(
@@ -125,25 +116,25 @@ class _SignUpState extends State<SignUp>
                 ),
                 spacer1(),
                 // NAME
-                _appData.formDataField(
+                _appController.formDataField(
                   fieldController: _nameController,
                   lableText: 'Name',
                   textInputType: TextInputType.name
                 ),
                 // SURNNAME
-                _appData.formDataField(
+                _appController.formDataField(
                   fieldController: _surnameController,
                   lableText: 'Surname',
                   textInputType: TextInputType.name
                 ),
                 // ID
-                _appData.formDataField(
+                _appController.formDataField(
                   fieldController: _idController,
                   lableText: 'ID Number',
                   textInputType: TextInputType.number
                 ),
                 // EMAIL
-                _appData.formDataField(
+                _appController.formDataField(
                   fieldController: _emailOrPhoneController,
                   lableText: 'Email or Phone number',
                   textInputType: TextInputType.emailAddress
@@ -153,7 +144,7 @@ class _SignUpState extends State<SignUp>
                   padding: const EdgeInsets.symmetric(vertical: 5),
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    width: _appData.getWidgetWidth(),
+                    width: _appController.getWidgetWidth(),
                     decoration: BoxDecoration(
                       color: Colors.white, //.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10)
@@ -190,7 +181,7 @@ class _SignUpState extends State<SignUp>
                   padding: const EdgeInsets.symmetric(vertical: 5),
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    width: _appData.getWidgetWidth(),
+                    width: _appController.getWidgetWidth(),
                     decoration: BoxDecoration(
                       color: Colors.white, //.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10)
@@ -225,7 +216,7 @@ class _SignUpState extends State<SignUp>
                 // SIGN UP BUTTON
                 spacer1(),
                 NeuBox(
-                  width: _appData.getWidgetWidth(),
+                  width: _appController.getWidgetWidth(),
                   onTap: _signUpButtonOnPressed,
                   child: Center(
                     child: Text(

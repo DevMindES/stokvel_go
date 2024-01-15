@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:stokvel_go/controllers/app_controller.dart';
+import 'package:stokvel_go/controllers/auth_controller.dart';
 import 'package:stokvel_go/pages/onboarding/signup.dart';
-import 'package:stokvel_go/providers/app_data.dart';
-import 'package:stokvel_go/providers/auth_provider.dart';
 import 'package:stokvel_go/utils/error_handling.dart';
-import 'package:stokvel_go/utils/neubox.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
 import 'package:stokvel_go/utils/utils.dart';
 
@@ -20,6 +18,9 @@ class Login extends StatefulWidget
 
 class _LoginState extends State<Login>
 {
+  final _authController = AuthController.instance;
+  final _appController = AppController.instance;
+
   final TextEditingController _emailOrPhoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
@@ -34,21 +35,17 @@ class _LoginState extends State<Login>
   Future<void> _loginButtonOnPresed() async
   {
     if (!_allFieldsFilled()) {
-      await showMyDialog(
-        context,
+      await showGetMessageDialog(
         'Info',
-        'Please fill out all text fields'
+        'Please fill out all text fields.'
       );
-        return;
+      
+      return;
     }
 
-    final isEmailORphone = isEmailOrPhone(
-      context: context,
-      emailOrPhone: _emailOrPhoneController.text.trim()
-    );
+    final isEmailORphone = isEmailOrPhone(emailOrPhone: _emailOrPhoneController.text.trim());
 
     if (isEmailORphone == -1) {
-      // If it's not a valid email or phone, show the dialog
       await showMyDialog(
         context,
         'Info',
@@ -64,8 +61,7 @@ class _LoginState extends State<Login>
       phoneNumber = '+268${_emailOrPhoneController.text.trim()}';
     }
 
-    context.read<AuthProvider>().login(
-      context: context,
+    _authController.login(
       email: phoneNumber ?? _emailOrPhoneController.text.trim(),
       password: _passwordController.text.trim()
     );
@@ -74,8 +70,6 @@ class _LoginState extends State<Login>
   @override
   Widget build(BuildContext context)
   {
-    final _appData = Provider.of<AppData>(context, listen: false);
-
     return Scaffold(
       body: Container(
         height: double.infinity,
@@ -88,7 +82,7 @@ class _LoginState extends State<Login>
                 // building image
                 spacer1(),
                 Container(
-                  width: _appData.getWidgetWidth(),
+                  width: _appController.getWidgetWidth(),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12.0)
                   ),
@@ -114,7 +108,7 @@ class _LoginState extends State<Login>
                     child: Column(
                       children: [
                         // EMAIL OR PHONE NUMBER
-                        _appData.formDataField(
+                        _appController.formDataField(
                           fieldController: _emailOrPhoneController,
                           lableText: 'Email or Phone number',
                           textInputType: TextInputType.emailAddress
@@ -124,7 +118,7 @@ class _LoginState extends State<Login>
                           padding: const EdgeInsets.symmetric(vertical: 5),
                           child: Container(
                             padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                            width: _appData.getWidgetWidth(),
+                            width: _appController.getWidgetWidth(),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10)
@@ -166,7 +160,7 @@ class _LoginState extends State<Login>
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10.0),
                     child: SizedBox(
-                      width: _appData.getWidgetWidth(),
+                      width: _appController.getWidgetWidth(),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -191,12 +185,9 @@ class _LoginState extends State<Login>
                                 );
 
                                 return;
-                              };
+                              }
 
-                              context.read<AuthProvider>().forgotPassword(
-                                email: _emailOrPhoneController.text.trim(),
-                                context: context
-                              );
+                              _authController.forgotPassword(email: _emailOrPhoneController.text.trim());
                             },
                             child: Text(
                               'Forgot password?',
@@ -209,9 +200,9 @@ class _LoginState extends State<Login>
                   ),
                   spacer3(),
                 // LOGIN
-                _appData.neuBox(
+                _appController.neuBox(
                   onTap: _loginButtonOnPresed,
-                  width: _appData.getWidgetWidth(),
+                  width: _appController.getWidgetWidth(),
                   child: Center(
                     child: Text(
                       'Login',
@@ -226,7 +217,7 @@ class _LoginState extends State<Login>
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   child: SizedBox(
-                    width: _appData.getWidgetWidth(),
+                    width: _appController.getWidgetWidth(),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

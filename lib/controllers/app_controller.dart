@@ -1,39 +1,37 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
 import 'package:stokvel_go/utils/utils.dart';
 
-class AppData extends ChangeNotifier
+class AppController extends GetxController
 {
+  static AppController instance = Get.find();
+
   double? _screenHeight;
   double? _screenWidth;
   double? _widgetWidth;
 
   static const double _mediumScreenWidth = 641.0;
-  static const double _smallScreenWidth = 376.0;
+  // static const double _smallScreenWidth = 376.0;
 
-  AppData({
+  void setWidgetWidth({
     required double screenHeight,
     required double screenWidth,
-  }) {
+  })
+  {
     _screenHeight = screenHeight;
     _screenWidth = screenWidth;
-    _setWidgetWidth();
-  }
 
-  // double getScreenHeight() => _screenHeight!;
-  double getWidgetWidth() => _widgetWidth!;
-
-  void _setWidgetWidth()
-  {
     if (_screenWidth! < _mediumScreenWidth) {
       _widgetWidth = 0.80 * _screenWidth!;
     } else {
       _widgetWidth = _mediumScreenWidth;
     }
-
-    notifyListeners();
   }
+
+  double getScreenHeight() => _screenHeight!;
+  double getWidgetWidth() => _widgetWidth!;
+
 
   // TEXTFORM FIELD
   Widget formDataField({

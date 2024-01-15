@@ -1,5 +1,8 @@
 // CIRCULAR PROGRESS INDICATOR
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:stokvel_go/pages/onboarding/login.dart';
+import 'package:stokvel_go/utils/neubox.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
 
 // double textfieldWidth = 310.0;
@@ -69,6 +72,45 @@ Future<void> showCircularProgressIndicator({required BuildContext context}) asyn
     );
 
 
+Future<void> getCircularProgressIndicator() async
+{
+  return Get.defaultDialog(
+    radius: 8.0,
+    backgroundColor: Colors.white,
+    barrierDismissible: false,
+    title: 'Please wait',
+    titleStyle: contentTextStyle(),
+    titlePadding: const EdgeInsets.all(10.0),
+    content: const SizedBox(
+      width: 300.0,
+      child: Center(
+        child: CircularProgressIndicator(
+          color: dark_fonts_grey,
+        ),
+      ),
+    ),
+    contentPadding: const EdgeInsets.all(20.0),
+  );
+}
+
+
+// G E T    D I A L O G S
+const double borderRadius = 8.0;
+Row _dialogHeading(String tittle) => Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      const Icon(
+        Icons.info_outline,
+        size: 30.0,
+      ),
+      const SizedBox(width: 10.0),
+      Text(
+        tittle,
+        style: contentTextStyle(),
+      ),
+    ],
+  );
+
 // ALERT DIALOG
 Future<void> showMyDialog(BuildContext buildContext, title, message) async => showDialog(
       context: buildContext,
@@ -117,4 +159,49 @@ Future<void> showMyDialog(BuildContext buildContext, title, message) async => sh
         );
       },
     );
+
+
+Future<void> showGetMessageDialog(String tittle, String message)
+{
+  return Get.defaultDialog(
+    radius: borderRadius,
+    backgroundColor: Colors.white,
+    barrierDismissible: false,
+    title: '',
+    titlePadding: const EdgeInsets.all(0.0),
+    titleStyle: const TextStyle(fontSize: 0.0),
+    content: Column(
+      children: [
+        _dialogHeading(tittle),
+        const SizedBox(height: 20.0),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            message,
+            style: contentTextStyle()
+          ),
+        ),
+      ],
+    ),
+    contentPadding: const EdgeInsets.all(10.0),
+    cancel: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Text(
+              'Back',
+              style: contentTextStyle(
+                fontWeight: FontWeight.bold,
+                fontColor: Colors.lightBlue
+              ),
+            ),
+          )
+        ],
+      )
+    ),
+  );
+}
 

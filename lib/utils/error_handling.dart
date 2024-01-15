@@ -1,8 +1,4 @@
-
-
 import 'package:email_validator/email_validator.dart';
-import 'package:flutter/material.dart';
-import 'package:stokvel_go/utils/utils.dart';
 
 Map<String, String> getErrorMessageFromCode(String errorCode)
 {
@@ -102,10 +98,8 @@ Map<String, String> getErrorMessageFromCode(String errorCode)
 }
 
 
-int isEmailOrPhone({
-  required BuildContext context,
-  required String emailOrPhone
-}) {
+int isEmailOrPhone({required String emailOrPhone})
+{
   // Define a regular expression for Swaziland phone number validation
   final RegExp phoneRegex = RegExp(r"^(\+268)?(79|78|76)\d{6}$");
 

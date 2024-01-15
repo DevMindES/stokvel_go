@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stokvel_go/providers/app_data.dart';
-import 'package:stokvel_go/providers/auth_provider.dart';
+import 'package:stokvel_go/controllers/app_controller.dart';
+import 'package:stokvel_go/controllers/auth_controller.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
 import 'package:stokvel_go/utils/utils.dart';
 
@@ -14,6 +14,9 @@ class ResetPassword extends StatefulWidget {
 
 class _ResetPasswordState extends State<ResetPassword>
 {
+  final _authController = AuthController.instance;
+    final _appController = AppController.instance;
+
   final TextEditingController _validationCodeController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
@@ -36,8 +39,7 @@ class _ResetPasswordState extends State<ResetPassword>
   Future<void> _resetPasswordOnPressed() async
   {
     if (!_allFieldsFilled()) {
-      await showMyDialog(
-        context,
+      await showGetMessageDialog(
         'Password reset info',
         'Please fill in all fields.'
       );
@@ -46,8 +48,7 @@ class _ResetPasswordState extends State<ResetPassword>
     }
 
     if (!_passwordsMatch()) {
-      await showMyDialog(
-        context,
+      await showGetMessageDialog(
         'Passwords info',
         'Please ensure passwords are the same.'
       );
@@ -55,8 +56,7 @@ class _ResetPasswordState extends State<ResetPassword>
       return;
     }
 
-    context.read<AuthProvider>().validatePasswordReset(
-      context: context,
+    _authController.validatePasswordReset(
       validationCode: _validationCodeController.text.trim(),
       password: _passwordController.text.trim()
     );
@@ -64,9 +64,7 @@ class _ResetPasswordState extends State<ResetPassword>
 
   @override
   Widget build(BuildContext context)
-  {
-    final _appData = Provider.of<AppData>(context, listen: false);
-    
+  {    
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,
@@ -96,7 +94,7 @@ class _ResetPasswordState extends State<ResetPassword>
                   child: Column(
                     children: [
                       // CONFIRMATION CODE
-                      _appData.formDataField(
+                      _appController.formDataField(
                         fieldController: _validationCodeController,
                         lableText: 'Confirmation code',
                         textInputType: TextInputType.text
@@ -106,7 +104,7 @@ class _ResetPasswordState extends State<ResetPassword>
                         padding: const EdgeInsets.symmetric(vertical: 5),
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                          width: _appData.getWidgetWidth(),
+                          width: _appController.getWidgetWidth(),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10)
@@ -144,7 +142,7 @@ class _ResetPasswordState extends State<ResetPassword>
               ),
               spacer3(),
               // RESET PASSWORD BUTTON
-              _appData.neuBox(
+              _appController.neuBox(
                 onTap: _resetPasswordOnPressed,
                 width: null,
                 child: const Center(

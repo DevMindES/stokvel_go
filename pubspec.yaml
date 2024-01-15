@@ -38,6 +38,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_inset_box_shadow: ^1.0.8
+  get: ^4.6.6
   provider: ^6.1.1
 
 dev_dependencies:

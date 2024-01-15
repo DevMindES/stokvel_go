@@ -1,9 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:stokvel_go/pages/navigation/investment_centre.dart';
 import 'package:stokvel_go/pages/navigation/lend_centre.dart';
 import 'package:stokvel_go/pages/navigation/notifications.dart';
 import 'package:stokvel_go/pages/navigation/portfolio.dart';
+import 'package:stokvel_go/pages/onboarding/profile.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
 
 class Landing extends StatefulWidget {
@@ -30,12 +31,18 @@ class _LandingState extends State<Landing>
       appBar: AppBar(
         elevation: 0.0,
         backgroundColor: offwhite_background,
-        title: const Row(
+        title: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Icon(
-              Icons.person,
-              color: dark_fonts_grey,
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: GestureDetector(
+                onTap: () => Get.to(() => const Profile()),
+                child: const Icon(
+                  Icons.person,
+                  color: dark_fonts_grey,
+                ),
+              ),
             )
           ]
         ),
