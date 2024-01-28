@@ -215,8 +215,8 @@ class GetCashButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           minimumSize: Size(double.infinity, 50), // double.infinity is the width and 50 is the height
-          primary: Colors.blue, // Button color
-          onPrimary: Colors.white, // Text color
+          backgroundColor: Colors.blue, // Button color
+          foregroundColor: Colors.white, // Text color
         ),
         onPressed: () {},
         child: Text('Get cash', style: TextStyle(fontSize: 18)),
