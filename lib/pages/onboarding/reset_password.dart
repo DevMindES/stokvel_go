@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:stokvel_go/controllers/app_controller.dart';
 import 'package:stokvel_go/controllers/auth_controller.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
@@ -15,7 +14,7 @@ class ResetPassword extends StatefulWidget {
 class _ResetPasswordState extends State<ResetPassword>
 {
   final _authController = AuthController.instance;
-    final _appController = AppController.instance;
+  final _appController = AppController.instance;
 
   final TextEditingController _validationCodeController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
