@@ -1,0 +1,24 @@
+# This file defines a workflow that analyzes your codebase and intelligently creates a
+# new configuration file with build/test/deploy jobs that are specific to your setup
+version: 2.1
+setup: true
+orbs:
+  continuation: circleci/continuation@0.1.2
+
+jobs:
+  auto-create-config:
+    docker:
+      - image: circleci/circleci-inferconfig:latest
+    steps:
+      - checkout
+      # create a configuration file that is specific to your setup
+      - run: circleci-inferconfig > generated_config.yml
+      # immediately run a new workflow based on that configuration
+      - continuation/continue:
+          configuration_path: generated_config.yml
+
+workflows:
+  analyze-my-code:
+    jobs:
+      - auto-create-config
+
