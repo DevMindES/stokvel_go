@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:stokvel_go/controllers/app_controller.dart';
-import 'package:stokvel_go/controllers/auth_controller.dart';
 import 'package:stokvel_go/utils/error_handling.dart';
 import 'package:stokvel_go/utils/neubox.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
 import 'package:stokvel_go/utils/utils.dart';
+
+import '../../init_packages.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -15,80 +15,67 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp>
 {
-  final _authController = AuthController.instance;
-  final _appController = AppController.instance;
-
   final _nameController = TextEditingController();
   final _surnameController = TextEditingController();
   final _idController = TextEditingController();
-  final _emailOrPhoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  bool _isPasswordVisible = false;
-  bool _isConfirmPasswordVisible = false;
+  final _emailController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
+  // final _passwordController = TextEditingController();
+  // final _confirmPasswordController = TextEditingController();
+  // bool _isPasswordVisible = false;
+  // bool _isConfirmPasswordVisible = false;
 
   bool _allFieldsFilled() {
     if (_nameController.text.trim().isEmpty) return false;
     if (_surnameController.text.trim().isEmpty) return false;
     if (_idController.text.trim().isEmpty) return false;
-    if (_emailOrPhoneController.text.trim().isEmpty) return false;
-    if (_passwordController.text.trim().isEmpty) return false;
-    if (_confirmPasswordController.text.trim().isEmpty) return false;
-    if (_confirmPasswordController.text.trim().isEmpty) return false;
+    if (_emailController.text.trim().isEmpty) return false;
+    if (_phoneNumberController.text.trim().isEmpty) return false;
     return true;
   }
 
-  bool _passwordsMatch() {
-    bool passwordsMatch = false;
-    if (_passwordController.text.trim() == _confirmPasswordController.text.trim()) {
-      passwordsMatch = true;
-    }
-    return passwordsMatch;
-  }
+  // bool _passwordsMatch() => _passwordController.text.trim() == _confirmPasswordController.text.trim();
 
   Future<void> _signUpButtonOnPressed() async
   {
     if (!_allFieldsFilled()) {
       await showGetMessageDialog(
-        'Info',
-        'Please fill out all text fields.'
+        message: 'Please fill out all text fields.'
       );
       return;
     }
 
-    final isEmailORphone = isEmailOrPhone(emailOrPhone: _emailOrPhoneController.text.trim());
+    final isEmail = isEmailOrPhone(emailOrPhone: _emailController.text.trim());
 
-    if (isEmailORphone == -1) {
+    if (isEmail == -1) {
       // If it's not a valid email or phone, show the dialog
       await showGetMessageDialog(
-        'Info',
-        'Please ensure you have entered a valid email address or phone number'
+        message: 'Please ensure you have entered a valid email address.'
       );
 
       return;
     }
 
-    if (!_passwordsMatch()) {
-      await showMyDialog(
-        context,
-        'Info',
-        'Please double check your passwords.'
+    String phoneNumber = _phoneNumberController.text.trim();
+    if (!phoneNumber.startsWith("+268")) phoneNumber = "+268$phoneNumber";
+
+    final isPhoneNumber = isEmailOrPhone(emailOrPhone: phoneNumber);
+
+    if (isPhoneNumber == -1) {
+      // If it's not a valid email or phone, show the dialog
+      await showGetMessageDialog(
+        message: 'Please ensure you have entered a valid phone number.'
       );
+
       return;
     }
 
-    String? phoneNumber;
-
-    if (isEmailORphone == 0 && !_emailOrPhoneController.text.trim().startsWith('+268')) {
-      phoneNumber = '+268${_emailOrPhoneController.text.trim()}';
-    }
-
-    _authController.signUp(
+    await authController.signUp(
       name: _nameController.text.trim(),
       surname: _surnameController.text.trim(),
       idNumber: _idController.text.trim(),
-      email: isEmailORphone == 1 ? _emailOrPhoneController.text.trim() : null,
-      phoneNumber: isEmailORphone == 0 ? phoneNumber : null,
+      email: _emailController.text.trim(),
+      phoneNumber: phoneNumber
     );
   }
 
@@ -97,135 +84,136 @@ class _SignUpState extends State<SignUp>
   {
     return Scaffold(
       appBar: appBar(),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        color: offwhite_background,
-        child: SafeArea(
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: appController.hsp),
           child: SingleChildScrollView(
             child: Column(
               children: [
                 spacer2(),
-                const Text(
-                  'Please sign up below',
-                  style: TextStyle(
-                    fontSize: h1,
-                    fontWeight: FontWeight.bold,
-                    color: dark_fonts_grey
-                  ),
+                contentText(
+                  data: 'Please sign up below',
+                  fontSize: h1,
+                  fontWeight: FontWeight.bold,
                 ),
                 spacer1(),
                 // NAME
-                _appController.formDataField(
+                formDataField(
                   fieldController: _nameController,
                   lableText: 'Name',
                   textInputType: TextInputType.name
                 ),
+                spacer4(),
                 // SURNNAME
-                _appController.formDataField(
+                formDataField(
                   fieldController: _surnameController,
                   lableText: 'Surname',
                   textInputType: TextInputType.name
                 ),
+                spacer4(),
                 // ID
-                _appController.formDataField(
+                formDataField(
                   fieldController: _idController,
                   lableText: 'ID Number',
                   textInputType: TextInputType.number
                 ),
+                spacer4(),
                 // EMAIL
-                _appController.formDataField(
-                  fieldController: _emailOrPhoneController,
-                  lableText: 'Email or Phone number',
+                formDataField(
+                  fieldController: _emailController,
+                  lableText: 'Email',
                   textInputType: TextInputType.emailAddress
                 ),
+                spacer4(),
+                // PHONE NUMBER
+                formDataField(
+                  fieldController: _phoneNumberController,
+                  lableText: 'Phone number',
+                  textInputType: TextInputType.number
+                ),
                 // PASSWORD
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    width: _appController.getWidgetWidth(),
-                    decoration: BoxDecoration(
-                      color: Colors.white, //.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10)
-                    ),
-                    child: TextFormField(
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {return 'Please enter some text';}
-                        return null;
-                      },
-                      controller: _passwordController,
-                      style: const TextStyle(
-                        fontSize: h3,
-                        color: dark_fonts_grey
-                      ),
-                      decoration: InputDecoration(
-                        suffixIcon: IconButton(
-                          icon: _isPasswordVisible
-                                ? const Icon(Icons.visibility)
-                                : const Icon(Icons.visibility_off),
-                          onPressed:() => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                          color: Colors.redAccent,
-                        ),
-                        labelText: 'Password',
-                        labelStyle: const TextStyle(
-                          color: dark_fonts_grey
-                        ),
-                      ),
-                      obscureText: !_isPasswordVisible,
-                    ),
-                  ),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(vertical: 5),
+                //   child: Container(
+                //     padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                //     width: appController.widgetWidth,
+                //     decoration: BoxDecoration(
+                //       color: white, //.withOpacity(0.1),
+                //       borderRadius: BorderRadius.circular(10)
+                //     ),
+                //     child: TextFormField(
+                //       validator: (value) {
+                //         if (value == null || value.isEmpty) {return 'Please enter some text';}
+                //         return null;
+                //       },
+                //       controller: _passwordController,
+                //       style: const TextStyle(
+                //         fontSize: h3,
+                //         color: dark_fonts_grey
+                //       ),
+                //       decoration: InputDecoration(
+                //         suffixIcon: IconButton(
+                //           icon: _isPasswordVisible
+                //                 ? const Icon(Icons.visibility)
+                //                 : const Icon(Icons.visibility_off),
+                //           onPressed:() => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                //           color: Colors.redAccent,
+                //         ),
+                //         labelText: 'Password',
+                //         labelStyle: const TextStyle(
+                //           color: dark_fonts_grey
+                //         ),
+                //       ),
+                //       obscureText: !_isPasswordVisible,
+                //     ),
+                //   ),
+                // ),
                 // CONFIRM PASSWORD
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    width: _appController.getWidgetWidth(),
-                    decoration: BoxDecoration(
-                      color: Colors.white, //.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10)
-                    ),
-                    child: TextFormField(
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {return 'Please enter some text';}
-                        return null;
-                      },
-                      controller: _confirmPasswordController,
-                      style: const TextStyle(
-                        fontSize: h3,
-                        color: dark_fonts_grey
-                      ),
-                      decoration: InputDecoration(
-                        suffixIcon: IconButton(
-                          icon: _isConfirmPasswordVisible
-                                ? const Icon(Icons.visibility)
-                                : const Icon(Icons.visibility_off),
-                          onPressed:() => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
-                          color: Colors.redAccent,
-                        ),
-                        labelText: 'Confirm password',
-                        labelStyle: const TextStyle(
-                          color: dark_fonts_grey
-                        ),
-                      ),
-                      obscureText: !_isConfirmPasswordVisible,
-                    ),
-                  ),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(vertical: 5),
+                //   child: Container(
+                //     padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                //     width: appController.widgetWidth,
+                //     decoration: BoxDecoration(
+                //       color: Colors.white, //.withOpacity(0.1),
+                //       borderRadius: BorderRadius.circular(10)
+                //     ),
+                //     child: TextFormField(
+                //       validator: (value) {
+                //         if (value == null || value.isEmpty) {return 'Please enter some text';}
+                //         return null;
+                //       },
+                //       controller: _confirmPasswordController,
+                //       style: const TextStyle(
+                //         fontSize: h3,
+                //         color: dark_fonts_grey
+                //       ),
+                //       decoration: InputDecoration(
+                //         suffixIcon: IconButton(
+                //           icon: _isConfirmPasswordVisible
+                //                 ? const Icon(Icons.visibility)
+                //                 : const Icon(Icons.visibility_off),
+                //           onPressed:() => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
+                //           color: Colors.redAccent,
+                //         ),
+                //         labelText: 'Confirm password',
+                //         labelStyle: const TextStyle(
+                //           color: dark_fonts_grey
+                //         ),
+                //       ),
+                //       obscureText: !_isConfirmPasswordVisible,
+                //     ),
+                //   ),
+                // ),
                 // SIGN UP BUTTON
                 spacer1(),
-                NeuBox(
-                  width: _appController.getWidgetWidth(),
+                neuBox(
                   onTap: _signUpButtonOnPressed,
-                  child: Center(
-                    child: Text(
-                      'Sign Up',
-                      style: contentTextStyle(
-                        fontSize: h3,
-                        fontColor: Colors.white
-                      )
-                    ),
+                  wide: true,
+                  child: contentText(
+                    data: 'Sign Up',
+                    fontColor: white,
+                    fontWeight: FontWeight.bold
                   ),
                 ),
               ],

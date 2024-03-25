@@ -1,90 +1,57 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:stokvel_go/init_packages.dart';
 import 'package:stokvel_go/pages/landing.dart';
 import 'package:stokvel_go/pages/onboarding/login.dart';
-import 'package:stokvel_go/pages/onboarding/reset_password.dart';
 import 'package:stokvel_go/utils/error_handling.dart';
 import 'package:stokvel_go/utils/utils.dart';
 
 class AuthController extends GetxController
 {
-  final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
   static AuthController instance = Get.find();
+  final _auth = FirebaseAuth.instance;
+
   Rx<User?> _user = Rx<User?>(null);
-  Rx<Stream<DocumentSnapshot<Map<String,dynamic>>>?> _userDetails = Rx<Stream<DocumentSnapshot<Map<String, dynamic>>>?>(null);
-  Rx<Stream<QuerySnapshot<Map<String,dynamic>>>?> homeStream = Rx<Stream<QuerySnapshot<Map<String,dynamic>>>?>(null);
-  String? _firestoreErrorMessage;
-  String _userName = '';
-  String _userSurname = '';
-  String _userGender = '';
-  String _userPhoneNumber = '';
-  Rx<String> profilePhoto = ''.obs;
+  final RxString _name = "".obs;
+  final RxString _surname = "".obs;
+  final RxString _phoneNumber = "".obs;
+  final RxString _email = "".obs;
+  final RxString _profilePhoto = "".obs;
 
-  @override void onReady() {
-    _initialScreen();
-    super.onReady();
-  }
 
-  void _initialScreen()
-  {
-    if (_auth.currentUser == null) {
-      Get.offAll(() => const Login());
-    } else {
-      _initUser();
-      setUserDetails();
-      Get.offAll(() => const Landing());
-    }
-  }
+  String get uid => _user.value!.uid;
+  String get name => _name.value;
+  String get surname => _surname.value;
+  String get phoneNumber => _phoneNumber.value;
+  String get email => _email.value;
+  String get profilePhoto => _profilePhoto.value;
 
-  void _initUser()
-  {
-    _user = Rx<User?>(_auth.currentUser);
-    _user.bindStream(_auth.userChanges());
-    
-    _userDetails = Rx<Stream<DocumentSnapshot<Map<String, dynamic>>>?>(
-      _firestore.collection('users')
-      .doc(_auth.currentUser!.uid)
-      .snapshots()
-    );
-  }
-
-  void setUserDetails()
-  {
-    if (_userDetails.value != null) {
-      _userDetails.value?.first.then((documentSnapshot) {
-        if (documentSnapshot.exists) {
-          final data = documentSnapshot.data()!;
-          _userName = data['name'];
-          _userSurname = data['surname'];
-          _userGender = data['gender'];
-          _userPhoneNumber = data['cell_number'];
-          profilePhoto.value = data['profile_photo'];
-        }
-      });
-    }
-  }
 
   Future<void> logout() async
   {
     getCircularProgressIndicator();
 
     try {
-      await _auth.signOut();
+      await _auth.signOut().then((_) {
+        _name.value = "";
+        _surname.value = "";
+        _phoneNumber.value = "";
+        _email.value = "";
+      });
       Get.back();
-      _initialScreen();
     } on Exception catch (e) {
       Get.back();
-      showGetMessageDialog(
-        'Error',
-        e.toString()
+      await showGetMessageDialog(
+        tittle:  "Error",
+        message: e.toString()
       );
     }
+    
+    Get.to(() => const Login());
   }
 
 
@@ -94,68 +61,13 @@ class AuthController extends GetxController
 
     String? errorCode;
     String? errorMessage;
-    bool sent = true;
 
     try {
       await _auth.sendPasswordResetEmail(email: email);
-      // Check for user-not-found error after sending the email
-      if (_auth.currentUser == null) {
-        errorCode = 'auth/user-not-found';
-      }
-    } on FirebaseAuthException catch (e) {
-      errorCode = e.code;
-    } on SocketException catch (e) { // Handle network errors
-      errorCode = 'Network error';
-      errorMessage = 'Please check your internet connection and try again.';
-    } on Exception catch (e) { // Handle other potential errors
-      // logError(e); // Log the error for debugging
-      errorCode = 'Unkown error';
-      errorMessage = 'An unexpected error occurred. Please try again later.';
-    }
-
-    if (errorCode != null)
-    { // an error occured
       Get.back();
-
-      if (errorMessage == null) { // it's a firebase auth exception
-        Map<String, String> errorInfo = getErrorMessageFromCode(errorCode);
-        await showGetMessageDialog(
-          errorInfo['errorCode']!,
-          errorInfo['errorMessage']!
-        );
-      } else { // some other error
-        await showGetMessageDialog(
-          errorCode,
-          errorMessage
-        );
-      }
-      
-      return;
-    }
-
-    Get.back();
-    await showGetMessageDialog(
-      'Password reset info',
-      'Password reset email sent.'
-    );
-
-    Get.to(() => const ResetPassword());
-  }
-
-  
-  Future<void> validatePasswordReset({
-    required String validationCode,
-    required String password}) async
-  {
-    getCircularProgressIndicator();
-
-    String? errorCode;
-    String? errorMessage;
-
-    try {
-      await _auth.confirmPasswordReset(
-        code: validationCode,
-        newPassword: password
+      await showGetMessageDialog(
+        tittle: 'Password reset info',
+        message:  'Password reset email sent. Please check your email address for further instructions.'
       );
     } on FirebaseAuthException catch (e) {
       errorCode = e.code;
@@ -175,26 +87,18 @@ class AuthController extends GetxController
       if (errorMessage == null) { // it's a firebase auth exception
         Map<String, String> errorInfo = getErrorMessageFromCode(errorCode);
         await showGetMessageDialog(
-          errorInfo['errorCode']!,
-          errorInfo['errorMessage']!
+          tittle: errorInfo['errorCode']!,
+          message: errorInfo['errorMessage']!
         );
       } else { // some other error
         await showGetMessageDialog(
-          errorCode,
-          errorMessage
+          tittle: errorCode,
+          message: errorMessage
         );
       }
       
       return;
     }
-
-    Get.back();
-    await showGetMessageDialog(
-      'Password reset info',
-      'Password has been reset successfully.'
-    );
-
-    Get.offAll(() => const Login());
   }
 
 
@@ -207,28 +111,51 @@ class AuthController extends GetxController
     String? errorCode;
     String? errorMessage;
 
-    int isEmail = isEmailOrPhone(emailOrPhone: email);
-
-    if (isEmail != 1) {
-      Get.back();
-      await showGetMessageDialog(
-        'Info',
-        'Please use your email.'
-      );
-
-      return;
-    }
-
-    // if (isEmail == 0 && !email.startsWith('+268')) email = '+268$email';
-
     try {
-      UserCredential? userCredential = await _auth.signInWithEmailAndPassword(
+      await _auth.signInWithEmailAndPassword(
         email: email,
         password: password
-      );
+      ).then((userCredential) {
+        _user = Rx<User?>(userCredential.user);
+        _user.bindStream(_auth.userChanges());
+      });
+
+      print("current user: ${_auth.currentUser}");
+      String? idToken = await _auth.currentUser!.getIdToken();
+      print("id token: $idToken");
+
+
+      final getUserData = functions.httpsCallable("getUserData");
+      final result = await getUserData.call({"uid": _user.value!.uid});
+
+      final status = result.data["status"];
+
+      if (status == "Error") {
+        Get.back();
+        await showGetMessageDialog(
+          tittle: status,
+          message: result.data["message"]
+        );
+
+        return;
+      }
+
+      Map<dynamic, dynamic> userData = result.data["message"];
+      _name.value = userData["name"];
+      _surname.value = userData["surname"];
+      _phoneNumber.value = userData["phoneNumber"];
+      _email.value = userData["email"];
+      _profilePhoto.value = userData["profilePhoto"] ?? "";
+
+      Get.back();
+      Get.offAll(() => const Landing());
+    } on FirebaseFunctionsException catch (e) {
+      errorCode = e.code;
+      errorMessage = e.message;
     }
     on FirebaseAuthException catch (e) {
       errorCode = e.code;
+      errorMessage = e.message;
     }
     on PlatformException catch (e) {
       errorCode = e.code;
@@ -242,35 +169,16 @@ class AuthController extends GetxController
       errorCode = 'unkown';
       errorMessage = 'unkown!';
     }
-    catch (e) { // Handle other potential errors
-      errorCode = 'well';
-      errorMessage = 'sharks';
-    }
 
-    if (errorCode != null)
-    { // an error occured
-      Get.back();
-
-      if (errorMessage == null) { // it's a firebase auth exception
-        Map<String, String> errorInfo = getErrorMessageFromCode(errorCode!);
-        await showGetMessageDialog(
-          errorInfo['errorCode']!,
-          errorInfo['errorMessage']!
-        );
-      } else { // some other error
-        await showGetMessageDialog(
-          errorCode,
-          errorMessage
-        );
-      }
-      
-      return;
-    }
-
-    _initUser();
-    setUserDetails();
     Get.back();
-    Get.offAll(() => const Landing());
+    if (errorCode != null) {
+      Map<String, String> errorInfo = getErrorMessageFromCode(errorCode!);
+      await showGetMessageDialog(
+        tittle: errorInfo['errorCode']!,
+        message: errorInfo['errorMessage']!
+      );
+    }
+
   }
 
 
@@ -281,70 +189,110 @@ class AuthController extends GetxController
     required String? phoneNumber,
     required String? email}) async
   {
-    // showCircularProgressIndicator(context: context);
     getCircularProgressIndicator();
 
-    try { // check if this email or phone number is already existing
-      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('checkExistingUser');
-
-      final HttpsCallableResult result = await callable.call(<String, dynamic>{
-        'email': phoneNumber == null ? email : null,
-        'phoneNumber': email == null ? phoneNumber : null,
+    try { 
+      final addToTempUsers = functions.httpsCallable("addToTempUsers");
+      final result = await addToTempUsers.call(<String, dynamic>{
+        "name": name,
+        "surname": surname,
+        "idNumber": idNumber,
+        "phoneNumber": phoneNumber,
+        "email": email,
       });
 
-      String method = phoneNumber == null ? 'email' : 'phone number';
-
-      if (result.data['status'] == 'warning') {
-        Get.back();
-        await showGetMessageDialog(
-          'Info',
-          'This $method is already assocciated with an existing account.'
-        );
-
-        return;
-      }
-    } on Exception catch (e) {
-      // There was an unknown error
       Get.back();
       await showGetMessageDialog(
-        'Error',
-        e.toString()
-        // 'An unkown error occured. Please try again later.'
+        tittle: result.data["status"], 
+        message: result.data["message"]
       );
-
-      return;
-    }
-
-    try { // add user details to temp_users
-      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('addToTempUsers');
-      final HttpsCallableResult result = await callable.call(<String, dynamic>{
-        'displayName': '$name $surname',
-        'idNumber': idNumber,
-        'email': phoneNumber == null ? email : null,
-        'phoneNumber': email == null ? phoneNumber : null,
-      });
-
-      // if (result.data != null) detailsAdded = true;
-      
-    } on Exception catch (e) {
-      // There was an unknown error
+    } on FirebaseFunctionsException catch (e) {
       Get.back();
       await showGetMessageDialog(
-        'Error',
-        e.toString()
-        // 'An unkown error occured. Please try again later.'
+        tittle: "Error",
+        message: e.message!
       );
-
-      return;
     }
 
-    Get.back();
-    await showGetMessageDialog(
-      'Signup info',
-      'Your account creation request has been successfuly sent to the admin.'
-    );
-
-    Get.offAll(const Login());
+    Get.offAll(() => const Login());
   }
+
+
+
+
+  // String? _firestoreErrorMessage;
+
+  // @override void onReady() {
+  //   _initialScreen();
+  //   super.onReady();
+  // }
+
+  // void _initialScreen()
+  // {
+  //   if (_auth.currentUser == null) {
+  //     Get.offAll(() => const Login());
+  //   } else {
+  //     _initUser();
+  //     setUserDetails();
+  //     Get.offAll(() => const Landing());
+  //   }
+  // }
+
+
+
+  // Future<void> validatePasswordReset({
+  //   required String validationCode,
+  //   required String password}) async
+  // {
+  //   getCircularProgressIndicator();
+
+  //   String? errorCode;
+  //   String? errorMessage;
+
+  //   try {
+  //     await _auth.confirmPasswordReset(
+  //       code: validationCode,
+  //       newPassword: password
+  //     );
+  //   } on FirebaseAuthException catch (e) {
+  //     errorCode = e.code;
+  //   } on SocketException catch (e) { // Handle network errors
+  //     errorCode = 'Network error';
+  //     errorMessage = 'Please check your internet connection and try again.';
+  //   } on Exception catch (e) { // Handle other potential errors
+  //     // logError(e); // Log the error for debugging
+  //     errorCode = 'Unkown error';
+  //     errorMessage = 'An unexpected error occurred. Please try again later.';
+  //   }
+
+  //   if (errorCode != null)
+  //   { // an error occured
+  //     Get.back();
+
+  //     if (errorMessage == null) { // it's a firebase auth exception
+  //       Map<String, String> errorInfo = getErrorMessageFromCode(errorCode);
+  //       await showGetMessageDialog(
+  //         errorInfo['errorCode']!,
+  //         errorInfo['errorMessage']!
+  //       );
+  //     } else { // some other error
+  //       await showGetMessageDialog(
+  //         errorCode,
+  //         errorMessage
+  //       );
+  //     }
+      
+  //     return;
+  //   }
+
+  //   Get.back();
+  //   await showGetMessageDialog(
+  //     'Password reset info',
+  //     'Password has been reset successfully.'
+  //   );
+
+  //   Get.offAll(() => const Login());
+  // }
+
 
 }

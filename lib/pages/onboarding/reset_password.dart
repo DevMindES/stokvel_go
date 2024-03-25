@@ -39,8 +39,8 @@ class _ResetPasswordState extends State<ResetPassword>
   {
     if (!_allFieldsFilled()) {
       await showGetMessageDialog(
-        'Password reset info',
-        'Please fill in all fields.'
+        tittle: 'Password reset info',
+        message: 'Please fill in all fields.'
       );
 
       return;
@@ -48,17 +48,12 @@ class _ResetPasswordState extends State<ResetPassword>
 
     if (!_passwordsMatch()) {
       await showGetMessageDialog(
-        'Passwords info',
-        'Please ensure passwords are the same.'
+        tittle: 'Passwords info',
+        message: 'Please ensure passwords are the same.'
       );
 
       return;
     }
-
-    _authController.validatePasswordReset(
-      validationCode: _validationCodeController.text.trim(),
-      password: _passwordController.text.trim()
-    );
   }
 
   @override
@@ -67,12 +62,12 @@ class _ResetPasswordState extends State<ResetPassword>
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,
-        backgroundColor: offwhite_background,
+        backgroundColor: light_neumorphic_blue,
       ),
       body: Container(
         height: double.infinity,
         width: double.infinity,
-        color: offwhite_background,
+        color: light_neumorphic_blue,
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -103,7 +98,7 @@ class _ResetPasswordState extends State<ResetPassword>
                         padding: const EdgeInsets.symmetric(vertical: 5),
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                          width: _appController.getWidgetWidth(),
+                          width: _appController.widgetWidth,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10)

@@ -7,30 +7,39 @@ class AppController extends GetxController
 {
   static AppController instance = Get.find();
 
+  // APP DIMENSIONS
   double? _screenHeight;
   double? _screenWidth;
   double? _widgetWidth;
+  double? _horizontalSymmetricPadding;
+  final double _mediumScreenWidth = 641.0;
+  // final double _smallScreenWidth = 376.0;
 
-  static const double _mediumScreenWidth = 641.0;
-  // static const double _smallScreenWidth = 376.0;
+  // WIDEGET DATA
+  final RxInt _navBarIndex = 0.obs;
 
-  void setWidgetWidth({
-    required double screenHeight,
-    required double screenWidth,
-  })
-  {
+  // PROCEED
+  final RxBool _proceed = false.obs;
+  void setProceed({required bool value}) => _proceed.value = value;
+  bool get proceed => _proceed.value;
+
+
+  void setWidgetWidth({required double screenHeight, required double screenWidth}) {
     _screenHeight = screenHeight;
     _screenWidth = screenWidth;
 
     if (_screenWidth! < _mediumScreenWidth) {
-      _widgetWidth = 0.80 * _screenWidth!;
+      _widgetWidth = 0.90 * _screenWidth!;
+      _horizontalSymmetricPadding = 0.05 * _screenWidth!;
     } else {
       _widgetWidth = _mediumScreenWidth;
     }
   }
 
-  double getScreenHeight() => _screenHeight!;
-  double getWidgetWidth() => _widgetWidth!;
+  double get screenHeight => _screenHeight!;
+  double get screenWidth => _screenWidth!;
+  double get widgetWidth => _widgetWidth!;
+  double get hsp => _horizontalSymmetricPadding!;
 
 
   // TEXTFORM FIELD
@@ -103,4 +112,10 @@ class AppController extends GetxController
       ),
     );
   }
+
+  // navbar index
+  void setNavBarIndex({required int index}) => _navBarIndex.value = index;
+  int get navBarIndex => _navBarIndex.value;
+
+
 }

@@ -63,6 +63,7 @@ exports.checkExistingUser = functions.https.onCall(async (data) => {
   }
 });
 
+
 exports.addToTempUsers = functions.https.onCall(async (data) => {
   try {
     if (data.email === null) { // create new user with phone number

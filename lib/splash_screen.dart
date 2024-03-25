@@ -34,7 +34,6 @@ class SplashScreen extends StatelessWidget
           ),
         ],
       ),
-      backgroundColor: offwhite_background
     );
   }
 }

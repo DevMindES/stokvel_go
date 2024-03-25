@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stokvel_go/init_packages.dart';
 import 'package:stokvel_go/pages/navigation/investment_centre.dart';
 import 'package:stokvel_go/pages/navigation/lend_centre.dart';
-import 'package:stokvel_go/pages/navigation/notifications.dart';
 import 'package:stokvel_go/pages/navigation/portfolio.dart';
 import 'package:stokvel_go/pages/onboarding/profile.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
@@ -20,17 +20,15 @@ class _LandingState extends State<Landing>
     const Portfolio(),
     const InvestmentCentre(),
     const LendCentre(),
-    const Notifications()
   ];
 
-  int _navBarIndex = 0;
   @override
   Widget build(BuildContext context)
   {
-    return Scaffold(
+    return Obx(() => Scaffold(
       appBar: AppBar(
-        elevation: 0.0,
-        backgroundColor: offwhite_background,
+        elevation: 0.0, 
+        backgroundColor: light_neumorphic_blue,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -47,34 +45,25 @@ class _LandingState extends State<Landing>
           ]
         ),
       ),
-      backgroundColor: offwhite_background,
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        color: offwhite_background,
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: _listPages[_navBarIndex]
-          ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: _listPages[appController.navBarIndex]
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: offwhite_background,
-        elevation: 5.0,
-        currentIndex: _navBarIndex,
-        selectedItemColor: primary_blue,
-        unselectedItemColor: dark_fonts_grey,
-        onTap: (index) {
-          setState(() => _navBarIndex = index);
-        },
+        backgroundColor: primary_blue,
+        elevation: 0.0,
+        currentIndex: appController.navBarIndex,
+        selectedItemColor: white, 
+        unselectedItemColor: dark_neumorphic_blue,
+        onTap: (index) => appController.setNavBarIndex(index: index),
         items: [
           _item(iconData: Icons.wallet_rounded, itemLabel: 'Portfolio'),
           _item(iconData: Icons.attach_money_rounded, itemLabel: 'Investments'),
           _item(iconData: Icons.shopping_basket_outlined, itemLabel: 'Lending'),
-          _item(iconData: Icons.notifications, itemLabel: 'Notifications')
         ],
       ),
-    );
+    ));
   }
 
   BottomNavigationBarItem _item({
@@ -84,7 +73,7 @@ class _LandingState extends State<Landing>
     return BottomNavigationBarItem(
       icon: Icon(
         iconData,
-        color: dark_fonts_grey,
+        color: light_neumorphic_blue,
       ),
       label: itemLabel
     );
