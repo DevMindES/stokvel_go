@@ -14,7 +14,7 @@ exports.checkExistingUser = functions.https.onCall(async (data) => {
       identifier = data.email;
     }
 
-    // Check if user exists in Firebase Auth
+    ///// Check if user exists in Firebase Auth
     if (method === "phone number") {
       await admin.auth().getUserByPhoneNumber(identifier)
         .then(userRecord => {
