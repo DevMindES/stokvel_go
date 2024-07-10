@@ -18,7 +18,7 @@ import 'package:stokvel_go/pages/onboarding/reset_password.dart';
 import 'package:stokvel_go/pages/onboarding/signup.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
 import 'init_packages.dart';
-
+// Stuff
 Future<void> main() async
 {
   WidgetsFlutterBinding.ensureInitialized();
