@@ -10,8 +10,7 @@ import 'package:stokvel_go/pages/onboarding/login.dart';
 import 'package:stokvel_go/utils/error_handling.dart';
 import 'package:stokvel_go/utils/utils.dart';
 
-class AuthController extends GetxController
-{
+class AuthController extends GetxController {
   static AuthController instance = Get.find();
   final _auth = FirebaseAuth.instance;
 
@@ -22,7 +21,6 @@ class AuthController extends GetxController
   final RxString _email = "".obs;
   final RxString _profilePhoto = "".obs;
 
-
   String get uid => _user.value!.uid;
   String get name => _name.value;
   String get surname => _surname.value;
@@ -30,9 +28,7 @@ class AuthController extends GetxController
   String get email => _email.value;
   String get profilePhoto => _profilePhoto.value;
 
-
-  Future<void> logout() async
-  {
+  Future<void> logout() async {
     getCircularProgressIndicator();
 
     try {
@@ -45,18 +41,13 @@ class AuthController extends GetxController
       Get.back();
     } on Exception catch (e) {
       Get.back();
-      await showGetMessageDialog(
-        tittle:  "Error",
-        message: e.toString()
-      );
+      await showGetMessageDialog(tittle: "Error", message: e.toString());
     }
-    
+
     Get.to(() => const Login());
   }
 
-
-  Future<void> forgotPassword({required String email}) async
-  {
+  Future<void> forgotPassword({required String email}) async {
     getCircularProgressIndicator();
 
     String? errorCode;
@@ -66,57 +57,53 @@ class AuthController extends GetxController
       await _auth.sendPasswordResetEmail(email: email);
       Get.back();
       await showGetMessageDialog(
-        tittle: 'Password reset info',
-        message:  'Password reset email sent. Please check your email address for further instructions.'
-      );
+          tittle: 'Password reset info',
+          message:
+              'Password reset email sent. Please check your email address for further instructions.');
     } on FirebaseAuthException catch (e) {
       errorCode = e.code;
-    } on SocketException catch (e) { // Handle network errors
+    } on SocketException catch (e) {
+      // Handle network errors
       errorCode = 'Network error';
       errorMessage = 'Please check your internet connection and try again.';
-    } on Exception catch (e) { // Handle other potential errors
+    } on Exception catch (e) {
+      // Handle other potential errors
       // logError(e); // Log the error for debugging
       errorCode = 'Unkown error';
       errorMessage = 'An unexpected error occurred. Please try again later.';
     }
 
-    if (errorCode != null)
-    { // an error occured
+    if (errorCode != null) {
+      // an error occured
       Get.back();
 
-      if (errorMessage == null) { // it's a firebase auth exception
+      if (errorMessage == null) {
+        // it's a firebase auth exception
         Map<String, String> errorInfo = getErrorMessageFromCode(errorCode);
         await showGetMessageDialog(
-          tittle: errorInfo['errorCode']!,
-          message: errorInfo['errorMessage']!
-        );
-      } else { // some other error
-        await showGetMessageDialog(
-          tittle: errorCode,
-          message: errorMessage
-        );
+            tittle: errorInfo['errorCode']!,
+            message: errorInfo['errorMessage']!);
+      } else {
+        // some other error
+        await showGetMessageDialog(tittle: errorCode, message: errorMessage);
       }
-      
+
       return;
     }
   }
 
-
-  Future<void> login({
-    required String email,
-    required String password}) async
-  {
+  Future<void> login({required String email, required String password}) async {
     getCircularProgressIndicator();
 
     String? errorCode;
     String? errorMessage;
 
     try {
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password
-      ).then((userCredential) {
+      await _auth
+          .signInWithEmailAndPassword(email: email, password: password)
+          .then((userCredential) {
         _user = Rx<User?>(userCredential.user);
+        if (_user.value == null) throw "No active user";
         _user.bindStream(_auth.userChanges());
       });
 
@@ -124,48 +111,42 @@ class AuthController extends GetxController
       String? idToken = await _auth.currentUser!.getIdToken();
       print("id token: $idToken");
 
+      // final getUserData = functions.httpsCallable("getUserData");
+      // final result = await getUserData.call({"uid": _user.value!.uid});
 
-      final getUserData = functions.httpsCallable("getUserData");
-      final result = await getUserData.call({"uid": _user.value!.uid});
+      // final status = result.data["status"];
 
-      final status = result.data["status"];
+      // if (status == "Error") {
+      //   Get.back();
+      //   await showGetMessageDialog(
+      //       tittle: status, message: result.data["message"]);
 
-      if (status == "Error") {
-        Get.back();
-        await showGetMessageDialog(
-          tittle: status,
-          message: result.data["message"]
-        );
+      //   return;
+      // }
 
-        return;
-      }
-
-      Map<dynamic, dynamic> userData = result.data["message"];
-      _name.value = userData["name"];
-      _surname.value = userData["surname"];
-      _phoneNumber.value = userData["phoneNumber"];
-      _email.value = userData["email"];
-      _profilePhoto.value = userData["profilePhoto"] ?? "";
+      // Map<dynamic, dynamic> userData = result.data["message"];
+      // _name.value = userData["name"];
+      // _surname.value = userData["surname"];
+      // _phoneNumber.value = userData["phoneNumber"];
+      // _email.value = userData["email"];
+      // _profilePhoto.value = userData["profilePhoto"] ?? "";
 
       Get.back();
       Get.offAll(() => const Landing());
     } on FirebaseFunctionsException catch (e) {
       errorCode = e.code;
       errorMessage = e.message;
-    }
-    on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (e) {
       errorCode = e.code;
       errorMessage = e.message;
-    }
-    on PlatformException catch (e) {
+    } on PlatformException catch (e) {
       errorCode = e.code;
       errorMessage = e.message;
-    }
-    on SocketException catch (e) { // Handle network errors
+    } on SocketException catch (e) {
+      // Handle network errors
       errorCode = 'Network error';
       errorMessage = 'Please check your internet connection and try again.';
-    }
-    on Exception catch (e) {
+    } on Exception catch (e) {
       errorCode = 'unkown';
       errorMessage = 'unkown!';
     }
@@ -174,51 +155,39 @@ class AuthController extends GetxController
     if (errorCode != null) {
       Map<String, String> errorInfo = getErrorMessageFromCode(errorCode!);
       await showGetMessageDialog(
-        tittle: errorInfo['errorCode']!,
-        message: errorInfo['errorMessage']!
-      );
+          tittle: errorInfo['errorCode']!, message: errorInfo['errorMessage']!);
     }
-
   }
 
-
-  Future<void> signUp({
-    required String name,
-    required String surname,
-    required String idNumber,
-    required String? phoneNumber,
-    required String? email}) async
-  {
+  Future<void> signUp(
+      {required String name,
+      required String surname,
+      required String idNumber,
+      required String? phoneNumber,
+      required String? email,
+      required String? password}) async {
     getCircularProgressIndicator();
 
-    try { 
-      final addToTempUsers = functions.httpsCallable("addToTempUsers");
+    try {
+      final addToTempUsers = functions.httpsCallable("createUser");
       final result = await addToTempUsers.call(<String, dynamic>{
         "name": name,
         "surname": surname,
         "idNumber": idNumber,
         "phoneNumber": phoneNumber,
         "email": email,
+        "password": password
       });
 
       Get.back();
-      await showGetMessageDialog(
-        tittle: result.data["status"], 
-        message: result.data["message"]
-      );
+      await showGetMessageDialog(tittle: "Success", message: result.data);
     } on FirebaseFunctionsException catch (e) {
       Get.back();
-      await showGetMessageDialog(
-        tittle: "Error",
-        message: e.message!
-      );
+      await showGetMessageDialog(tittle: "Error", message: e.message!);
     }
 
     Get.offAll(() => const Login());
   }
-
-
-
 
   // String? _firestoreErrorMessage;
 
@@ -237,8 +206,6 @@ class AuthController extends GetxController
   //     Get.offAll(() => const Landing());
   //   }
   // }
-
-
 
   // Future<void> validatePasswordReset({
   //   required String validationCode,
@@ -281,7 +248,7 @@ class AuthController extends GetxController
   //         errorMessage
   //       );
   //     }
-      
+
   //     return;
   //   }
 
@@ -293,6 +260,4 @@ class AuthController extends GetxController
 
   //   Get.offAll(() => const Login());
   // }
-
-
 }
