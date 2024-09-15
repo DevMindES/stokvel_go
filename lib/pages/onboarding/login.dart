@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:get/get.dart';
+import 'package:stokvel_go/pages/landing.dart';
+import 'package:stokvel_go/pages/navigation/home.dart';
 import 'package:stokvel_go/pages/onboarding/signup.dart';
 import 'package:stokvel_go/utils/error_handling.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
@@ -8,17 +11,14 @@ import 'package:stokvel_go/utils/utils.dart';
 
 import '../../init_packages.dart';
 
-
-class Login extends StatefulWidget
-{
+class Login extends StatefulWidget {
   const Login({super.key});
 
   @override
   State<Login> createState() => _LoginState();
 }
 
-class _LoginState extends State<Login>
-{
+class _LoginState extends State<Login> {
   final TextEditingController _emailOrPhoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
@@ -29,38 +29,82 @@ class _LoginState extends State<Login>
     return true;
   }
 
-  Future<void> _loginButtonOnPresed() async
-  {
+// Signin - Nqoba
+
+  void signIn() async {
+    // show loading circle
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+    // try creating the user
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailOrPhoneController.text,
+          password: _passwordController.text);
+      //pop the loading circle
+      Navigator.pop(context);
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => const Landing()));
+    } on FirebaseAuthException catch (e) {
+      //pop the loading circle
+      Navigator.pop(context);
+      //show error message
+      showErrorMessage(e.code);
+    }
+  }
+
+// error message to user
+
+  void showErrorMessage(String Message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.deepPurple,
+          title: Center(
+            child: Text(
+              Message,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _loginButtonOnPresed() async {
     if (!_allFieldsFilled()) {
-      await showGetMessageDialog(
-        message: 'Please fill out all text fields.'
-      );
-      
+      await showGetMessageDialog(message: 'Please fill out all text fields.');
+
       return;
     }
 
-    final isEmailORphone = isEmailOrPhone(emailOrPhone: _emailOrPhoneController.text.trim());
+    final isEmailORphone =
+        isEmailOrPhone(emailOrPhone: _emailOrPhoneController.text.trim());
 
     if (isEmailORphone == -1) {
-      await showMyDialog(
-        context,
-        'Info',
-        'Please ensure you have entered a valid email address or phone number'
-      );
+      await showMyDialog(context, 'Info',
+          'Please ensure you have entered a valid email address or phone number');
 
       return;
     }
 
     String? phoneNumber;
 
-    if (isEmailORphone == 0 && !_emailOrPhoneController.text.trim().startsWith('+268')) {
+    if (isEmailORphone == 0 &&
+        !_emailOrPhoneController.text.trim().startsWith('+268')) {
       phoneNumber = '+268${_emailOrPhoneController.text.trim()}';
     }
 
     await authController.login(
-      email: phoneNumber ?? _emailOrPhoneController.text.trim(),
-      password: _passwordController.text.trim()
-    );
+        email: phoneNumber ?? _emailOrPhoneController.text.trim(),
+        password: _passwordController.text.trim());
   }
 
   @override
@@ -70,162 +114,149 @@ class _LoginState extends State<Login>
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: appController.hsp),
           child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // building image
-                spacer1(),
-                Container(
-                  width: appController.widgetWidth,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12.0)
-                  ),
-                  child: const Image(
-                    image: AssetImage("assets/images/intro_building_rect.jpg"),
-                    fit: BoxFit.fitWidth,
-                  ),
+            child: Column(children: [
+              // building image
+              spacer1(),
+              Container(
+                width: appController.widgetWidth,
+                decoration:
+                    BoxDecoration(borderRadius: BorderRadius.circular(12.0)),
+                child: const Image(
+                  image: AssetImage("assets/images/intro_building_rect.jpg"),
+                  fit: BoxFit.fitWidth,
                 ),
-                // greeting text
-                spacer1(),
-                contentText(
+              ),
+              // greeting text
+              spacer1(),
+              contentText(
                   data: "Hello, please sign in below",
                   fontSize: h1,
                   fontWeight: FontWeight.bold),
-                // user details form
-                spacer1(),
-                Form(
+              // user details form
+              spacer1(),
+              Form(
                   child: Column(
-                    children: [
-                      // EMAIL OR PHONE NUMBER
-                      formDataField(
-                        fieldController: _emailOrPhoneController, 
-                        lableText: "Email", 
-                        textInputType: TextInputType.text),
-                        spacer4(),
-                      // PASSWORD
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                          width: appController.widgetWidth,
-                          decoration: BoxDecoration(
-                            color: white,
-                            borderRadius: BorderRadius.circular(10)
+                children: [
+                  // EMAIL OR PHONE NUMBER
+                  formDataField(
+                      fieldController: _emailOrPhoneController,
+                      lableText: "Email",
+                      textInputType: TextInputType.text),
+                  spacer4(),
+                  // PASSWORD
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      width: appController.widgetWidth,
+                      decoration: BoxDecoration(
+                          color: white,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: TextFormField(
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter some text';
+                          }
+                          return null;
+                        },
+                        controller: _passwordController,
+                        style: const TextStyle(
+                            fontSize: h3, color: dark_fonts_grey),
+                        decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: _isPasswordVisible
+                                ? const Icon(Icons.visibility)
+                                : const Icon(Icons.visibility_off),
+                            onPressed: () => setState(
+                                () => _isPasswordVisible = !_isPasswordVisible),
+                            color: Colors.redAccent,
                           ),
-                          child: TextFormField(
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {return 'Please enter some text';}
-                              return null;
-                            },
-                            controller: _passwordController,
-                            style: const TextStyle(
-                              fontSize: h3,
-                              color: dark_fonts_grey
-                            ),
-                            decoration: InputDecoration(
-                              suffixIcon: IconButton(
-                                icon: _isPasswordVisible
-                                      ? const Icon(Icons.visibility)
-                                      : const Icon(Icons.visibility_off),
-                                onPressed:() => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                                color: Colors.redAccent,
-                              ),
-                              labelText: 'Password',
-                              labelStyle: contentTextStyle(
-                                fontSize: h4,
-                                fontColor: primary_blue
-                              ),
-                            ),
-                            obscureText: !_isPasswordVisible,
-                          ),
+                          labelText: 'Password',
+                          labelStyle: contentTextStyle(
+                              fontSize: h4, fontColor: primary_blue),
                         ),
+                        obscureText: !_isPasswordVisible,
                       ),
-                              
-                    ],
-                  )
-                ),
-                spacer3(),
-                // fORGOT PASSWORD
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: SizedBox(
-                    width: appController.widgetWidth,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        GestureDetector(
-                          onTap: () async
-                          {
-                            if (_emailOrPhoneController.text.trim().isEmpty) {
-                              await showMyDialog(
-                                context,
-                                'Password reset info',
-                                'Please fill in your email first'
-                              );
-              
-                              return;
-                            }
-              
-                            if (!EmailValidator.validate(_emailOrPhoneController.text.trim())) {
-                              showMyDialog(
-                                context,
-                                'Info',
-                                'Please enter a valid email address'
-                              );
-              
-                              return;
-                            }
-              
-                            await authController.forgotPassword(email: _emailOrPhoneController.text.trim());
-                          },
-                          child: contentText(
-                            data: "Forgot password",
-                            fontWeight: FontWeight.bold),
-                        ),
-                      ],
                     ),
                   ),
+                ],
+              )),
+              spacer3(),
+              // fORGOT PASSWORD
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: SizedBox(
+                  width: appController.widgetWidth,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          if (_emailOrPhoneController.text.trim().isEmpty) {
+                            await showMyDialog(context, 'Password reset info',
+                                'Please fill in your email first');
+
+                            return;
+                          }
+
+                          if (!EmailValidator.validate(
+                              _emailOrPhoneController.text.trim())) {
+                            showMyDialog(context, 'Info',
+                                'Please enter a valid email address');
+
+                            return;
+                          }
+
+                          await authController.forgotPassword(
+                              email: _emailOrPhoneController.text.trim());
+                        },
+                        child: contentText(
+                            data: "Forgot password",
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
-                spacer3(),
-                // LOGIN
-                neuBox(
+              ),
+              spacer3(),
+              // LOGIN
+              neuBox(
                   onTap: _loginButtonOnPresed,
-                  wide: true, 
+                  wide: true,
                   color: primary_blue,
                   child: contentText(
                     data: "Login",
                     fontColor: white,
-                    fontWeight: FontWeight.bold,)
-                ),
-                // to REGISTER page
-                spacer1(),
-                SizedBox(
-                  width: appController.widgetWidth,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      contentText(data: "Not a member?"),
-                      spacer4(),
-                      GestureDetector(
-                        onTap: () async => await Get.to(() => const SignUp()),
-                        child: contentText(
+                    fontWeight: FontWeight.bold,
+                  )),
+              // to REGISTER page
+              spacer1(),
+              SizedBox(
+                width: appController.widgetWidth,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    contentText(data: "Not a member?"),
+                    spacer4(),
+                    GestureDetector(
+                      onTap: () async => await Get.to(() => const SignUp()),
+                      child: contentText(
                           data: "Register here.",
                           fontColor: primary_blue,
-                          fontWeight: FontWeight.bold
-                        ),
-                      )
-                    ],
-                  ),
-                )
-              ]
-            ),
+                          fontWeight: FontWeight.bold),
+                    )
+                  ],
+                ),
+              )
+            ]),
           ),
         ),
       ),
     );
   }
 
-  @override void dispose()
-  {
+  @override
+  void dispose() {
     _emailOrPhoneController.dispose();
     _passwordController.dispose();
     super.dispose();
