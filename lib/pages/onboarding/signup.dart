@@ -4,7 +4,6 @@ import 'package:stokvel_go/utils/error_handling.dart';
 import 'package:stokvel_go/utils/neubox.dart';
 import 'package:stokvel_go/utils/theme_data.dart';
 import 'package:stokvel_go/utils/utils.dart';
-
 import '../../init_packages.dart';
 
 class SignUp extends StatefulWidget {

@@ -12,58 +12,98 @@ class JoinStokvel extends StatefulWidget {
   State<JoinStokvel> createState() => _JoinStokvelState();
 }
 
-class _JoinStokvelState extends State<JoinStokvel> 
-{
+class _JoinStokvelState extends State<JoinStokvel> {
   @override
   void initState() {
     stokvelsController.getStokvels();
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(), 
+      appBar: AppBar(),
       body: Column(
         children: [
-          spacer1(), 
+          spacer1(),
           Obx(() => Expanded(
-          child: stokvelsController.stokvelsLoading 
-            ? retrievingData() 
-            : stokvelsController.stokvelsError.isNotEmpty 
-              ? error404(message: stokvelsController.stokvelsError)
-              : stokvelsController.stokvels.isEmpty 
-                ? nothing() 
-                : ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: stokvelsController.stokvels.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: EdgeInsets.symmetric(vertical: appController.hsp, horizontal: appController.hsp),
-                        child: neuBox(
-                          onTap: () async => await _joinStokvel(stokvelName: stokvelsController.stokvels[index]["name"]),
-                          color: purple,
-                          child: Text(
-                            stokvelsController.stokvels[index]["name"], 
-                            style: contentTextStyle(
-                              fontColor: white
-                            ),
-                          ) 
-                        )
-                      );
-                    },
-                  )
-        )) 
+              child: stokvelsController.stokvelsLoading
+                  ? retrievingData()
+                  : stokvelsController.stokvelsError.isNotEmpty
+                      ? error404(message: stokvelsController.stokvelsError)
+                      : stokvelsController.stokvels.isEmpty
+                          ? nothing()
+                          : ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: stokvelsController.stokvels.length,
+                              itemBuilder: (context, index) {
+                                String stokvelName =
+                                    stokvelsController.stokvels[index]["name"];
+                                String joiningFee =
+                                    "${stokvelsController.stokvels[index]["joining_fee"]}";
+                                String numberOfMembers =
+                                    "${stokvelsController.stokvels[index]["members"].length}";
+                                return _buildStokvelItem(
+                                    stokvelName: stokvelName,
+                                    joiningFee: joiningFee,
+                                    numberOfMembers: numberOfMembers);
+                              },
+                            )))
         ],
+      ),
+    );
+  }
+
+  Widget _buildStokvelItem({
+    required String stokvelName,
+    required String joiningFee,
+    required String numberOfMembers,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: GestureDetector(
+        onTap: () async => await _joinStokvel(stokvelName: stokvelName),
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.purple,
+            borderRadius: BorderRadius.circular(12.0),
+            boxShadow: [
+              const BoxShadow(color: Colors.black26, blurRadius: 8.0)
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                stokvelName,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8.0),
+              Text(
+                'Joining Fee: $joiningFee',
+                style: TextStyle(color: Colors.white, fontSize: 16.0),
+              ),
+              SizedBox(height: 8.0),
+              Text(
+                'Members: $numberOfMembers',
+                style: TextStyle(color: Colors.white, fontSize: 16.0),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Future<void> _joinStokvel({required String stokvelName}) async {
     await showGetMessageDialog(
-      tittle: "Join stokvel?",
-      message: "Are you sure you want to join $stokvelName?", 
-      yes: _yes
-    );
+        tittle: "Join stokvel?",
+        message: "Are you sure you want to join $stokvelName?",
+        yes: _yes);
 
     if (!appController.proceed) return;
 
@@ -75,15 +115,10 @@ class _JoinStokvelState extends State<JoinStokvel>
 
       Get.back();
       await showGetMessageDialog(
-        tittle: result.data["status"],
-        message: result.data["message"]
-      );
+          tittle: result.data["status"], message: result.data["message"]);
     } on FirebaseFunctionsException catch (e) {
       Get.back();
-      await showGetMessageDialog(
-        tittle: "Error",
-        message: e.message!
-      );
+      await showGetMessageDialog(tittle: "Error", message: e.message!);
     }
 
     appController.setProceed(value: false);
