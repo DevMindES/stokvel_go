@@ -20,6 +20,8 @@ class AuthController extends GetxController {
   final RxString _phoneNumber = "".obs;
   final RxString _email = "".obs;
   final RxString _profilePhoto = "".obs;
+  final RxList<dynamic> _stokvels = [].obs;
+  final RxInt _totalStokvels = 0.obs;
 
   String get uid => _user.value!.uid;
   String get name => _name.value;
@@ -27,6 +29,8 @@ class AuthController extends GetxController {
   String get phoneNumber => _phoneNumber.value;
   String get email => _email.value;
   String get profilePhoto => _profilePhoto.value;
+  List<dynamic> get stokvels => _stokvels;
+  int get totalStokvels => _totalStokvels.value;
 
   Future<void> logout() async {
     getCircularProgressIndicator();
@@ -107,55 +111,49 @@ class AuthController extends GetxController {
         _user.bindStream(_auth.userChanges());
       });
 
-      print("current user: ${_auth.currentUser}");
-      String? idToken = await _auth.currentUser!.getIdToken();
-      print("id token: $idToken");
+      // print("current user: ${_auth.currentUser}");
+      // String? idToken = await _auth.currentUser!.getIdToken();
+      // print("id token: $idToken");
 
-      // final getUserData = functions.httpsCallable("getUserData");
-      // final result = await getUserData.call({"uid": _user.value!.uid});
+      final getUserData = functions.httpsCallable("getUserData");
+      final result = await getUserData.call({"uid": _user.value!.uid});
 
-      // final status = result.data["status"];
+      Map<dynamic, dynamic> userData = result.data;
+      _name.value = userData["name"];
+      _surname.value = userData["surname"];
+      _phoneNumber.value = userData["phoneNumber"];
+      _email.value = userData["email"];
+      _profilePhoto.value = userData["profilePhoto"] ?? "";
+      _stokvels.value = userData["stokvels"];
+      _totalStokvels.value = userData["total_stokvels"];
 
-      // if (status == "Error") {
-      //   Get.back();
-      //   await showGetMessageDialog(
-      //       tittle: status, message: result.data["message"]);
-
-      //   return;
-      // }
-
-      // Map<dynamic, dynamic> userData = result.data["message"];
-      // _name.value = userData["name"];
-      // _surname.value = userData["surname"];
-      // _phoneNumber.value = userData["phoneNumber"];
-      // _email.value = userData["email"];
-      // _profilePhoto.value = userData["profilePhoto"] ?? "";
+      print(userData);
 
       Get.back();
       Get.offAll(() => const Landing());
-    } on FirebaseFunctionsException catch (e) {
-      errorCode = e.code;
-      errorMessage = e.message;
-    } on FirebaseAuthException catch (e) {
-      errorCode = e.code;
-      errorMessage = e.message;
-    } on PlatformException catch (e) {
-      errorCode = e.code;
-      errorMessage = e.message;
-    } on SocketException catch (e) {
-      // Handle network errors
-      errorCode = 'Network error';
-      errorMessage = 'Please check your internet connection and try again.';
-    } on Exception catch (e) {
-      errorCode = 'unkown';
-      errorMessage = 'unkown!';
     }
-
-    Get.back();
-    if (errorCode != null) {
-      Map<String, String> errorInfo = getErrorMessageFromCode(errorCode!);
+    // on FirebaseFunctionsException catch (e) {
+    //   errorCode = e.code;
+    //   errorMessage = e.message;
+    // } on FirebaseAuthException catch (e) {
+    //   errorCode = e.code;
+    //   errorMessage = e.message;
+    // } on PlatformException catch (e) {
+    //   errorCode = e.code;
+    //   errorMessage = e.message;
+    // } on SocketException catch (e) {
+    //   // Handle network errors
+    //   errorCode = 'Network error';
+    //   errorMessage = 'Please check your internet connection and try again.';
+    // }
+    catch (e) {
+      Get.back();
       await showGetMessageDialog(
-          tittle: errorInfo['errorCode']!, message: errorInfo['errorMessage']!);
+        tittle: "Error",
+        message: e.toString(),
+      );
+
+      Get.back();
     }
   }
 

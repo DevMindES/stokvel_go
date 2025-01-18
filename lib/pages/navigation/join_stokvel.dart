@@ -110,12 +110,12 @@ class _JoinStokvelState extends State<JoinStokvel> {
     getCircularProgressIndicator();
 
     try {
-      final joinStokvel = functions.httpsCallable("joinStokvel");
+      final joinStokvel = functions.httpsCallable("joinStokvelRequest");
       final result = await joinStokvel.call({"stokvelName": stokvelName});
 
       Get.back();
       await showGetMessageDialog(
-          tittle: result.data["status"], message: result.data["message"]);
+          tittle: "Success.", message: result.data);
     } on FirebaseFunctionsException catch (e) {
       Get.back();
       await showGetMessageDialog(tittle: "Error", message: e.message!);
